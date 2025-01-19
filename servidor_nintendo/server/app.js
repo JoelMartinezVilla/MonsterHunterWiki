@@ -9,6 +9,55 @@ app.use(express.static('public'));
 app.use('/images', express.static('images'));
 
 
+app.get('/api/search', (req, res) => {
+  const query = (req.query.q || '').trim().toLowerCase();
+
+  // Si no hay término, devolvemos array vacío
+  if (!query) {
+    return res.json([]);
+  }
+
+  const dataDir = '../public';
+  fs.readdir(dataDir, (err, files) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error al leer el directorio.' });
+    }
+
+    // Filtramos para que sólo analicemos archivos .json
+    const jsonFiles = files.filter(file => file.toLowerCase().endsWith('.json'));
+    let results = [];
+    let pending = jsonFiles.length;
+
+    jsonFiles.forEach((file) => {
+      const filePath = path.join(dataDir, file);
+
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        pending--;
+
+        if (!err) {
+          try {
+            // Aquí puedes hacer un filtrado más fino si conoces la estructura del JSON
+            // Para algo básico, comprobamos si el contenido del JSON incluye el término de búsqueda
+            if (data.toLowerCase().includes(query)) {
+              // Podrías devolver el contenido completo o solo el nombre del fichero
+              // Para ejemplo: guardamos el nombre sin .json
+              results.push(file.replace('.json', ''));
+            }
+          } catch (parseError) {
+            console.error('Error al parsear el JSON del archivo: ' + file);
+          }
+        }
+
+        // Cuando hayamos leído todos los archivos, devolvemos results
+        if (pending === 0) {
+          res.json(results);
+        }
+      });
+    });
+  });
+});
+
+
 app.get('/api/images/:imageName', (req, res) => {
   const { imageName } = req.params;
   const imagePath = path.join(__dirname, '../images', imageName);
