@@ -13,218 +13,181 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
   late Future<List<String>> futureCategories;
   Future<List<String>>? futureSearchResults;
 
-  // Controlador para la caja de búsqueda
   final TextEditingController searchController = TextEditingController();
-  bool isSearching = false;
 
   @override
   void initState() {
     super.initState();
-    // Cargamos la lista de categorías al iniciar
     futureCategories = api.fetchCategories();
   }
 
-  // Construye la vista de categorías (si no estamos buscando)
   Widget buildCategoriesView() {
     return FutureBuilder<List<String>>(
       future: futureCategories,
       builder: (context, snapshot) {
-        // Mientras se cargan las categorías
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
-        // Error al cargar
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
-        // Sin datos
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No hay categorías disponibles'));
+          return Center(
+            child: Text(
+              'No hay categorías disponibles',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            ),
+          );
         }
 
-        // Lista de categorías
         final categories = snapshot.data!;
-        return Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: categories.map((cat) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.blueGrey.shade700,
-                      foregroundColor: Colors.white,
-                      minimumSize: Size(200, 60),
-                      textStyle: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(cat.toUpperCase()),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ListScreen(title: cat),
-                        ),
-                      );
-                    },
+        return GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 20,
+            mainAxisSpacing: 20,
+          ),
+          padding: const EdgeInsets.all(20.0),
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            final cat = categories[index];
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ListScreen(title: cat),
                   ),
                 );
-              }).toList(),
-            ),
-          ),
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      blurRadius: 8.0,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    cat,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blueGrey.shade800,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  // Construye la vista de resultados de búsqueda
-  Widget buildSearchResultsView() {
-    return FutureBuilder<List<String>>(
-      future: futureSearchResults,
-      builder: (context, snapshot) {
-        // Mientras se cargan los resultados
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        // Error al cargar
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        // Sin resultados
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No se encontraron resultados'));
-        }
-
-        // Lista de archivos/categorías que coincidieron en la búsqueda
-        final results = snapshot.data!;
-        return Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: results.map((item) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.blueGrey.shade700,
-                      foregroundColor: Colors.white,
-                      minimumSize: Size(200, 60),
-                      textStyle: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(item.toUpperCase()),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ListScreen(title: item),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // Método para gestionar la acción de "Buscar"
-  void _onSearch() {
+  void _onSearch() async {
     final query = searchController.text.trim();
-    if (query.isEmpty) {
-      // Si no hay texto, mostramos las categorías originales
-      setState(() {
-        isSearching = false;
-        futureSearchResults = null;
-      });
+    if (query.isNotEmpty) {
+      try {
+        final results = await api.fetchSearchResults(query);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ListScreen(
+              title: query,
+              searchResults: results,
+            ),
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al buscar: $e')),
+        );
+      }
     } else {
-      // Activamos modo búsqueda
-      setState(() {
-        isSearching = true;
-        // Llamamos al método de AppData para obtener resultados
-        futureSearchResults = api.fetchSearchResults(query);
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor ingrese un término de búsqueda.')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // AppBar sencillo y minimalista
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 1.0,
+        backgroundColor: const Color.fromARGB(255, 3, 126, 50),
+        elevation: 4.0,
         title: Text(
           'Monster Hunter Categories',
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
+            color: Colors.white,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
-        iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: Container(
-        color: Colors.grey[100],
-        child: Column(
-          children: [
-            // Barra de búsqueda justo debajo del título
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Campo de texto
-                  SizedBox(
-                    width: 300,
-                    child: TextField(
-                      controller: searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Buscar...',
-                        border: OutlineInputBorder(),
-                        isDense: true, // Más compacto
+      body: Column(
+        children: [
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar...',
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: BorderSide.none,
                       ),
-                      onSubmitted: (_) => _onSearch(),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 12.0,
+                      ),
+                      suffixIcon:
+                          Icon(Icons.search, color: Colors.grey.shade600),
+                    ),
+                    onSubmitted: (_) => _onSearch(),
+                  ),
+                ),
+                SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: _onSearch,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 3, 126, 50),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 12.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  SizedBox(width: 8),
-                  // Botón de búsqueda
-                  TextButton(
-                    onPressed: _onSearch,
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.black87,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: Text('Buscar'),
+                  child: Text(
+                    'Buscar',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-
-            // Contenido variable (resultados búsqueda o categorías)
-            Expanded(
-              child: isSearching
-                  ? buildSearchResultsView()
-                  : buildCategoriesView(),
-            ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: buildCategoriesView(),
+          ),
+        ],
       ),
+      backgroundColor: Colors.grey.shade100,
     );
   }
 }

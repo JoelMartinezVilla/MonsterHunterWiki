@@ -1,5 +1,6 @@
 // lib/screens/detail_screen.dart
 import 'package:flutter/material.dart';
+import 'AppData.dart';
 
 class DetailScreen extends StatelessWidget {
   final Map<String, dynamic> item;
@@ -7,6 +8,7 @@ class DetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppData api = AppData();
     final nombre = item['nombre'] ?? '';
     final descripcion = item['descripcion'] ?? '';
     final resistencias = item['resistencias'];
@@ -25,9 +27,9 @@ class DetailScreen extends StatelessWidget {
             if (imagen != null)
               Center(
                 child: Image.network(
-                  // Ajusta esta URL a la de tu servidor
-                  'http://127.0.0.1:3000/images/$imagen',
+                  api.fetchImage(imagen), // Generar URL de la imagen
                   height: 200,
+                  fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Text('Error cargando imagen');
                   },

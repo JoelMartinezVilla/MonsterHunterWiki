@@ -17,7 +17,7 @@ app.get('/api/search', (req, res) => {
     return res.json([]);
   }
 
-  const dataDir = '../public';
+  const dataDir = path.join(__dirname, '../public'); // Aseguramos la ruta absoluta
   fs.readdir(dataDir, (err, files) => {
     if (err) {
       return res.status(500).json({ error: 'Error al leer el directorio.' });
@@ -28,6 +28,11 @@ app.get('/api/search', (req, res) => {
     let results = [];
     let pending = jsonFiles.length;
 
+    if (pending === 0) {
+      // Si no hay archivos .json
+      return res.json(results);
+    }
+
     jsonFiles.forEach((file) => {
       const filePath = path.join(dataDir, file);
 
@@ -36,19 +41,17 @@ app.get('/api/search', (req, res) => {
 
         if (!err) {
           try {
-            // Aquí puedes hacer un filtrado más fino si conoces la estructura del JSON
-            // Para algo básico, comprobamos si el contenido del JSON incluye el término de búsqueda
-            if (data.toLowerCase().includes(query)) {
-              // Podrías devolver el contenido completo o solo el nombre del fichero
-              // Para ejemplo: guardamos el nombre sin .json
-              results.push(file.replace('.json', ''));
-            }
+            const jsonData = JSON.parse(data); // Parseamos el JSON
+            const filteredData = jsonData.filter(item =>
+              item.nombre.toLowerCase().includes(query) // Filtramos por coincidencia en el nombre
+            );
+            results = results.concat(filteredData); // Añadimos los resultados filtrados
           } catch (parseError) {
             console.error('Error al parsear el JSON del archivo: ' + file);
           }
         }
 
-        // Cuando hayamos leído todos los archivos, devolvemos results
+        // Cuando hayamos procesado todos los archivos, devolvemos los resultados
         if (pending === 0) {
           res.json(results);
         }
@@ -56,6 +59,8 @@ app.get('/api/search', (req, res) => {
     });
   });
 });
+
+
 
 
 app.get('/api/images/:imageName', (req, res) => {
@@ -84,7 +89,7 @@ app.get('/api/categories', (req, res) => {
       }
   
       // Filtramos para que sólo devuelva archivos con extensión .json
-      const jsonFiles = files.filter(file => file.toLowerCase().endsWith('.json')).map(file => file.replace(".json", ""));
+      const jsonFiles = files.filter(file => file.toLowerCase().endsWith('.json')).map(file => file.replace(".json", "")).map(file => file[0].toUpperCase()+file.substring(1).toLowerCase());
       
   
       // Devolvemos el listado en formato JSON
@@ -103,7 +108,7 @@ app.get('/api/:filename', (req, res) => {
     const { filename } = req.params;
   
     // Construimos la ruta completa al archivo JSON
-    const filePath = path.join('../public', `${filename}.json`);
+    const filePath = path.join('../public', `${filename.toLowerCase()}.json`);
   
     // Intentamos leer el archivo
     fs.readFile(filePath, 'utf8', (err, data) => {

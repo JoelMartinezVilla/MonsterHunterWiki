@@ -18,6 +18,10 @@ class AppData {
     }
   }
 
+  String fetchImage(String imageName) {
+    return '$baseUrl/images/$imageName';
+  }
+
   // Obtiene el contenido completo de un fichero JSON (por ejemplo 'monsters.json')
   Future<List<dynamic>> fetchItems(String category) async {
     final response = await http.get(Uri.parse('$baseUrl/$category'));
@@ -29,14 +33,14 @@ class AppData {
     }
   }
 
-  Future<List<String>> fetchSearchResults(String query) async {
+  Future<List<Map<String, dynamic>>> fetchSearchResults(String query) async {
     final url = Uri.parse('http://localhost:3000/api/search?q=$query');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      // El servidor devuelve una lista de strings
+      // El servidor devuelve una lista de objetos JSON
       final List<dynamic> data = json.decode(response.body);
-      return data.map((item) => item.toString()).toList();
+      return data.map((item) => Map<String, dynamic>.from(item)).toList();
     } else {
       throw Exception('Error al obtener resultados de búsqueda');
     }
