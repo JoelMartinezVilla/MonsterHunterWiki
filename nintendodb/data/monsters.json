@@ -1,0 +1,63 @@
+[
+    {
+      "nombre": "Rathalos",
+      "descripcion": "El Rey de los Cielos, un wyvern volador que expulsa fuego y ataca con ferocidad desde el aire.",
+      "habitats": ["Bosque Primigenio", "Desierto de Agujas"],
+      "imagen": "rathalos.jpg"
+    },
+    {
+      "nombre": "Anjanath",
+      "descripcion": "Un wyvern brutish que asemeja a un dinosaurio, conocido por sus ataques de fuego y gran agresividad.",
+      "habitats": ["Bosque Primigenio"],
+      "imagen": "anjanath.jpg"
+    },
+    {
+      "nombre": "Nergigante",
+      "descripcion": "Un Dragón Anciano que se regenera rápidamente y utiliza espinas endurecidas como armas mortales.",
+      "habitats": ["Coral Eterno", "Cañón de los Ancianos"],
+      "imagen": "nergigante.jpg"
+    },
+    {
+      "nombre": "Legiana",
+      "descripcion": "Un elegante wyvern volador que congela a sus presas con ataques de hielo.",
+      "habitats": ["Coral Eterno"],
+      "imagen": "legiana.jpg"
+    },
+    {
+      "nombre": "Barroth",
+      "descripcion": "Un monstruo con una poderosa armadura de barro que utiliza para defenderse y atacar.",
+      "habitats": ["Desierto de Agujas", "Pantano de los Condenados"],
+      "imagen": "barroth.jpg"
+    },
+    {
+      "nombre": "Diablos",
+      "descripcion": "Una bestia territorial con cuernos enormes, conocida como la Reina del Desierto.",
+      "habitats": ["Desierto de Agujas"],
+      "imagen": "diablos.jpg"
+    },
+    {
+      "nombre": "Zorah Magdaros",
+      "descripcion": "Un Dragón Anciano colosal que lleva un volcán en su espalda.",
+      "habitats": ["Mares de Lava"],
+      "imagen": "zorah_magdaros.jpg"
+    },
+    {
+      "nombre": "Tobi-Kadachi",
+      "descripcion": "Un wyvern eléctrico que utiliza su cola como un látigo para electrocutar a sus presas.",
+      "habitats": ["Bosque Primigenio"],
+      "imagen": "tobi_kadachi.jpg"
+    },
+    {
+      "nombre": "Kushala Daora",
+      "descripcion": "Un Dragón Anciano que controla el viento para crear huracanes protectores.",
+      "habitats": ["Cañón de los Ancianos", "Coral Eterno"],
+      "imagen": "kushala_daora.jpg"
+    },
+    {
+      "nombre": "Teostra",
+      "descripcion": "Un Dragón Anciano que envuelve su cuerpo en llamas intensas y explosiones brutales.",
+      "habitats": ["Mares de Lava", "Cañón de los Ancianos"],
+      "imagen": "teostra.jpg"
+    }
+  ]
+  
