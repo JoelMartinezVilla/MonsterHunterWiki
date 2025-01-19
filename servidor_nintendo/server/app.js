@@ -8,6 +8,24 @@ app.use(express.static('public'));
 
 app.use('/images', express.static('images'));
 
+
+app.get('/api/images/:imageName', (req, res) => {
+  const { imageName } = req.params;
+  const imagePath = path.join(__dirname, '../images', imageName);
+
+  // Comprobamos si existe el archivo
+  fs.access(imagePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      // Si no existe, enviamos un 404
+      return res.status(404).json({ error: 'Imagen no encontrada' });
+    }
+
+    // Si existe, la devolvemos con sendFile
+    res.sendFile(imagePath);
+  });
+});
+
+
 app.get('/api/categories', (req, res) => {
     const dataDir = '../public';
   
@@ -24,6 +42,7 @@ app.get('/api/categories', (req, res) => {
       res.json(jsonFiles);
     });
   });
+
 
 
 // Ruta universal: /api/:filename
