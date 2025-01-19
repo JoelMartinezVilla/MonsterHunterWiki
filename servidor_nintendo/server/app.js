@@ -1,10 +1,30 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const app = express();
 const port = 3000;
 
 app.use(express.static('public'));
 
 app.use('/images', express.static('images'));
+
+app.get('/api/categories', (req, res) => {
+    const dataDir = '../public';
+  
+    fs.readdir(dataDir, (err, files) => {
+      if (err) {
+        return res.status(500).json({ error: 'Error al leer el directorio.' });
+      }
+  
+      // Filtramos para que sólo devuelva archivos con extensión .json
+      const jsonFiles = files.filter(file => file.toLowerCase().endsWith('.json')).map(file => file.replace(".json", ""));
+      
+  
+      // Devolvemos el listado en formato JSON
+      res.json(jsonFiles);
+    });
+  });
+
 
 // Ruta universal: /api/:filename
 app.get('/api/:filename', (req, res) => {
@@ -34,6 +54,8 @@ app.get('/api/:filename', (req, res) => {
       }
     });
   });
+
+  
   
 
 // Iniciar servidor
